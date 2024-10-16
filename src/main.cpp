@@ -31,6 +31,10 @@ void constCharTest()
 	const char* name5str = names.get( name5 );     // "bicycle"
 
 	printf( "size:   %zu\ncount:  %zu\n\n", names.size(), names.count() );
+
+	names.clear();
+
+	printf( "size:   %zu\ncount:  %zu\n\n", names.size(), names.count() );
 }
 
 struct sCar

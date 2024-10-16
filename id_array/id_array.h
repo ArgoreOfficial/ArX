@@ -11,18 +11,21 @@ namespace wv
 	{
 	public:
 		id_array() { }
-		id_array( size_t _maxNumHandles ) : m_maxNumHandles{ _maxNumHandles } { }
+		id_array( const size_t& _maxNumHandles ) : m_maxNumHandles{ _maxNumHandles } { }
 
 		~id_array() 
 		{
-			for( auto& handle : m_handles )
-				erase( handle );
-			
+			clear();
+
 			if( m_pBuffer )
 				free( m_pBuffer );
+
+			m_pBuffer = nullptr;
+			m_size = 0;
+			m_maxNumHandles = 0;
 		}
 
-		void setMaxNumHandles( size_t _maxNumHandles ) 
+		void setMaxNumHandles( const size_t& _maxNumHandles )
 		{
 			if( _maxNumHandles < m_handles.size() )
 				return;
@@ -31,11 +34,11 @@ namespace wv
 
 		template<typename...Args>
 		[[nodiscard]] _Hty emplace( const Args&... _args );
+		[[nodiscard]] _Ty& get( const _Hty& _handle );
 
 		void erase( const _Hty& _handle );
-
-		[[nodiscard]] _Ty& get( _Hty _handle );
-
+		void clear();
+		
 		size_t count( void ) { return m_handles.size(); }
 		size_t size ( void ) { return m_size; }
 
@@ -82,6 +85,17 @@ namespace wv
 	}
 
 	template<typename _Hty, typename _Ty>
+	inline _Ty& id_array<_Hty, _Ty>::get( const _Hty& _handle )
+	{
+		if( m_handles.find( _handle ) == m_handles.end() )
+			throw std::out_of_range( "Invalid _Hty" );
+
+		size_t index = _handle - 1;
+
+		return ( (_Ty*)m_pBuffer )[ index ];
+	}
+
+	template<typename _Hty, typename _Ty>
 	inline void id_array<_Hty, _Ty>::erase( const _Hty& _handle )
 	{
 		if( m_handles.find( _handle ) == m_handles.end() )
@@ -98,13 +112,11 @@ namespace wv
 	}
 
 	template<typename _Hty, typename _Ty>
-	inline _Ty& id_array<_Hty, _Ty>::get( _Hty _handle )
+	inline void id_array<_Hty, _Ty>::clear()
 	{
-		if( m_handles.find( _handle ) == m_handles.end() )
-			throw std::out_of_range( "Invalid _Hty" );
-
-		size_t index = _handle - 1;
-
-		return ( (_Ty*)m_pBuffer )[ index ];
+		for( auto& handle : m_handles )
+			erase( handle );
+		m_handles.clear();
 	}
+
 }
