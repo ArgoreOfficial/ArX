@@ -36,7 +36,7 @@ namespace arg
 	private:
 
 		std::set<_Kty> m_keys;
-		uint8_t* m_pBuffer = nullptr;
+		_Ty* m_pBuffer = nullptr;
 		size_t m_size = 0;
 	};
 
@@ -44,26 +44,26 @@ namespace arg
 	template<typename... Args>
 	inline _Kty unordered_array<_Kty, _Ty>::emplace( const Args&... _args )
 	{
-		uint64_t key = 1;
+		size_t key = 1;
 		while( m_keys.find( (_Kty)key ) != m_keys.end() ) // find an unused key
 			key++;
+		
+		size_t index = key - 1; // index is key-1 because key 0 is invalid/none
+		size_t size = sizeof( _Ty ) * index + sizeof( _Ty );
 
-		uint64_t index = key - 1; // index is key-1 because key 0 is invalid/none
-		size_t endOffset = sizeof( _Ty ) * index + sizeof( _Ty );
-
-		if( endOffset >= m_size )
+		if( size >= m_size )
 		{
-			uint8_t* newptr = (uint8_t*)realloc( m_pBuffer, endOffset );
+			_Ty* newptr = (_Ty*)realloc( m_pBuffer, size );
 
 			if( newptr == nullptr )
 				throw std::runtime_error( "failed to reallocate buffer" );
 			
 			m_pBuffer = newptr;
-			m_size = endOffset;
+			m_size = size;
 		}
 
-		_Ty* base = &( (_Ty*)m_pBuffer )[ index ];
-		_Ty* obj = new( base ) _Ty( _args... );
+		_Ty* base = m_pBuffer + index;
+		_Ty* obj = new( base )_Ty( _args... );
 
 		m_keys.insert( (_Kty)key );
 
@@ -73,25 +73,17 @@ namespace arg
 	template<typename _Kty, typename _Ty>
 	inline _Ty& unordered_array<_Kty, _Ty>::at( const _Kty& _key )
 	{
-		if( m_keys.find( _key ) == m_keys.end() )
-			throw std::out_of_range( "Invalid Key" );
-
 		size_t index = _key - 1;
-
-		return ( (_Ty*)m_pBuffer )[ index ];
+		return m_pBuffer[ index ];
 	}
 
 	template<typename _Kty, typename _Ty>
 	inline void unordered_array<_Kty, _Ty>::erase( const _Kty& _key )
 	{
-		if( m_keys.find( _key ) == m_keys.end() )
-			throw std::out_of_range( "Cannot erase Invalid Key" );
-
 		m_keys.erase( _key );
 
 		size_t index = _key - 1;
-
-		_Ty& obj = ( (_Ty*)m_pBuffer )[ index ];
+		_Ty& obj = m_pBuffer[ index ];
 		obj.~_Ty();
 
 		memset( &obj, 0, sizeof( _Ty ) );
