@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../unordered_array/unordered_array.h"
+#include "../unordered_array/unordered_array.hpp"
 
 void constCharTest()
 {
@@ -52,7 +52,7 @@ int main()
 	uint16_t robinID = cars.emplace( "Reliant Robin", 3, 436.0f );
 	
 	printf( "%s weighs %fkg\n", cars.at( saabID ).strName, cars.at( saabID ).weightInKg );
-	printf( "%s weighs %fkg\n", cars.at( robinID ).strName, cars.at( robinID ).weightInKg );
+	printf( "%s weighs %fkg\n", cars[ robinID ].strName, cars[ robinID ].weightInKg );
 
 	return 0;
 }

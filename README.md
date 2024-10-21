@@ -1,35 +1,46 @@
 # unordered_array
 
-### Features
-* Continuous block of memory
-* Keys are **always** valid, until erased
+### Why?
+
+I needed a container that met these specific requirements
+* Must have a continuous block of memory
+* Keys/indices must **only** be invalidated when the user calls `erase()` or `clear()`
+* non-size_t keys, eg. uint16_t
+
+It's essentially a hybrid of `std::vector` and `std::unordered_map`  
 
 # Usage
+Note: Keys must be integer values, or castable to `size_t`
 ```cpp
 typedef uint16_t ID;
+struct SomeObject 
+{
+    SomeObject( const char* _name, int _coolness ) 
+        : name{ _name }, coolness{ _coolness } 
+    { }
+
+    const char* name;
+    int coolness;
+};
+
 
 arg::unordered_array<ID, SomeObject> objects;
-ID id1 = objects.emplace( "object1", 0, 1.0f  );
-ID id2 = objects.emplace( "object2", 4, 0.42f );
-```
-```cpp
+ID id1 = objects.emplace( "object1", 42 );
+ID id2 = objects.emplace( "object2", 11 );
+
 objects.erase( id1 );
 id1 = 0; // make sure to invalidate key
-```
 
-Accessing the real object can be done using `at()`
-
-```cpp
-SomeObject& obj2 = objects.at( id2 );
-obj2.name = "coolerObject2";
+objects.at( id2 ).name = "coolerObject2";
+objects[ id2 ].coolness = 9000;
 ```
 
 ```cpp
-objects.size();  // true size in bytes of the container
-objects.count(); // number of currently allocated elements in the container
+objects.size();  // element size of buffer (size in bytes/size of element)
+objects.count(); // number of currently allocated elements in the array
 ```
 
 ## Note on multithreading
-Just like other continous-memory-containers, the memory buffer may be reallocated whenever a new object is emplaced. This will invalidate any pointers or current references to said object  
+Just like other continous-memory-containers, the memory buffer may be reallocated whenever a new object is emplaced. This will invalidate any pointers or references to said object  
 aka; **use mutexes** as you would with a vector  
 Keys will always remain valid 

@@ -27,6 +27,8 @@ namespace arg
 		[[nodiscard]] _Kty emplace( const Args&... _args );
 		[[nodiscard]] _Ty& at( const _Kty& _key );
 
+		[[nodiscard]] _Ty& operator[]( const _Kty& _key ) { return at( _key ); }
+
 		void erase( const _Kty& _key );
 		void clear();
 		
@@ -48,20 +50,18 @@ namespace arg
 		while( m_keys.find( (_Kty)key ) != m_keys.end() ) // find an unused key
 			key++;
 		
-		size_t index = key - 1; // index is key-1 because key 0 is invalid/none
-		size_t size = sizeof( _Ty ) * index + sizeof( _Ty );
-
-		if( size >= m_size )
+		if( key >= m_size )
 		{
-			_Ty* newptr = (_Ty*)realloc( m_pBuffer, size );
+			_Ty* newptr = (_Ty*)realloc( m_pBuffer, key * sizeof( _Ty ) );
 
 			if( newptr == nullptr )
 				throw std::runtime_error( "failed to reallocate buffer" );
 			
 			m_pBuffer = newptr;
-			m_size = size;
+			m_size = key;
 		}
 
+		size_t index = key - 1; // index is key-1 because key 0 is invalid/none
 		_Ty* base = m_pBuffer + index;
 		_Ty* obj = new( base )_Ty( _args... );
 
