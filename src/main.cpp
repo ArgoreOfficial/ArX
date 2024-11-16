@@ -34,10 +34,6 @@ void constCharTest()
 
 struct sCar
 {
-	sCar( const char* _strName, int _numWheels, float _weightInKg ) :
-		strName{ _strName }, numWheels{ _numWheels }, weightInKg{ _weightInKg }
-	{}
-
 	const char* strName;
 	int numWheels;
 	float weightInKg;
@@ -48,7 +44,7 @@ int main()
 	constCharTest();
 
 	arg::unordered_array<uint16_t, sCar> cars;
-	uint16_t saabID  = cars.emplace( sCar{ "Saab 95 v4", 4, 946.0f } );
+	uint16_t saabID  = cars.emplace( "Saab 95 v4",    4, 946.0f );
 	uint16_t robinID = cars.emplace( "Reliant Robin", 3, 436.0f );
 	
 	printf( "%s weighs %fkg\n", cars.at( saabID ).strName, cars.at( saabID ).weightInKg );

@@ -63,7 +63,7 @@ namespace arg
 
 		size_t index = key - 1; // index is key-1 because key 0 is invalid/none
 		_Ty* base = m_pBuffer + index;
-		_Ty* obj = new( base )_Ty( _args... );
+		_Ty* obj = new( base )_Ty{ _args... };
 
 		m_keys.insert( (_Kty)key );
 
