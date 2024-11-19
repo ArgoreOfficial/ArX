@@ -15,10 +15,6 @@ Note: Keys must be integer values, or castable to `size_t`
 typedef uint16_t ID;
 struct SomeObject 
 {
-    SomeObject( const char* _name, int _coolness ) 
-        : name{ _name }, coolness{ _coolness } 
-    { }
-
     const char* name;
     int coolness;
 };
