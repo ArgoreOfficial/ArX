@@ -1,6 +1,7 @@
 #pragma once
 #pragma warning( disable : 4267 )
 
+#include <cstring>
 #include <stdint.h>
 #include <stdexcept>
 #include <set>
@@ -30,8 +31,7 @@ class unordered_array
 public:
 	unordered_array() { }
 
-	~unordered_array() 
-	{
+	~unordered_array() {
 		clear();
 
 		if( m_pBuffer )
@@ -51,7 +51,7 @@ public:
 
 	void erase( const _Kty& _key );
 	void clear();
-		
+	
 	size_t count( void ) { return m_keys.size(); }
 	size_t size ( void ) { return m_size; }
 
@@ -79,8 +79,7 @@ private:
 
 template<typename _Kty, typename _Ty>
 template<typename... Args>
-inline _Kty unordered_array<_Kty, _Ty>::emplace( const Args&... _args )
-{
+inline _Kty unordered_array<_Kty, _Ty>::emplace( const Args&... _args ) {
 	size_t key = 1;
 	while( m_keys.find( static_cast<_Kty>( key ) ) != m_keys.end() ) // find an unused key
 		key++;
@@ -110,15 +109,13 @@ inline _Kty unordered_array<_Kty, _Ty>::emplace( const Args&... _args )
 }
 
 template<typename _Kty, typename _Ty>
-inline _Ty& unordered_array<_Kty, _Ty>::at( const _Kty& _key )
-{
+inline _Ty& unordered_array<_Kty, _Ty>::at( const _Kty& _key ) {
 	size_t index = _key - 1;
 	return m_pBuffer[ index ];
 }
 
 template<typename _Kty, typename _Ty>
-inline _Ty& unordered_array<_Kty, _Ty>::at_locked( const _Kty& _key )
-{
+inline _Ty& unordered_array<_Kty, _Ty>::at_locked( const _Kty& _key ) {
 	lock( _key );
 	return at( _key );
 }
@@ -129,8 +126,7 @@ inline scoped_lock_ref<_Kty, _Ty, unordered_array<_Kty, _Ty>> unordered_array<_K
 }
 
 template<typename _Kty, typename _Ty>
-inline void unordered_array<_Kty, _Ty>::erase( const _Kty& _key )
-{
+inline void unordered_array<_Kty, _Ty>::erase( const _Kty& _key ) {
 	m_keys.erase( _key );
 
 	size_t index = _key - 1;
@@ -141,8 +137,7 @@ inline void unordered_array<_Kty, _Ty>::erase( const _Kty& _key )
 }
 
 template<typename _Kty, typename _Ty>
-inline void unordered_array<_Kty, _Ty>::clear()
-{
+inline void unordered_array<_Kty, _Ty>::clear() {
 	for( auto& handle : m_keys )
 		erase( handle );
 	m_keys.clear();

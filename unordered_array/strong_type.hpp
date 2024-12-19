@@ -9,8 +9,7 @@ struct strong_type
 {
 	strong_type( void ) :
 		value{ InvalidID }
-	{
-	}
+	{ }
 
 	strong_type( const _Ty& _v ) :
 		value{ _v }

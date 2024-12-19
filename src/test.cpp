@@ -2,16 +2,16 @@
 
 #include <unordered_array.hpp>
 #include <strong_type.hpp>
+#include <reflected_function.hpp>
 
 #include <stdio.h>
 
-struct sCar
+struct abstract_car
 {
 	const char* strName;
 	int numWheels;
 	float weightInKg;
 };
-
 
 void test::test_unordered_array()
 {
@@ -47,12 +47,14 @@ void test::test_unordered_array()
 		printf( "size:   %zu\ncount:  %zu\n\n", names.size(), names.count() );
 	}
 
-	arg::unordered_array<uint16_t, sCar> cars;
-	uint16_t saabID = cars.emplace( "Saab 95 v4", 4, 946.0f );
+	arg::unordered_array<uint16_t, abstract_car> cars;
+	uint16_t saabID  = cars.emplace( "Saab 95 v4", 4, 946.0f );
 	uint16_t robinID = cars.emplace( "Reliant Robin", 3, 436.0f );
 
 	printf( "%s weighs %fkg\n", cars.at( saabID ).strName, cars.at( saabID ).weightInKg );
 	printf( "%s weighs %fkg\n", cars[ robinID ].strName, cars[ robinID ].weightInKg );
+
+	printf( " ------------------------------\n" );
 }
 
 void test::test_array_view()
@@ -70,11 +72,47 @@ static uint16_t get_strong_value( handle1_t _t ) {
 void test::test_strong_type()
 {
 	printf( " ------ strong_type test ------\n" );
-
+	
 	handle1_t someHandle1{ 1 };
 	handle2_t someHandle2{ 2 };
 	
-	printf( "%i", get_strong_value( someHandle1 ) );
+	printf( "handle1_t: %i\n", get_strong_value( someHandle1 ) );
 	// printf( "%i", get_strong_value( someHandle2 ) ); // strong type mismatch, compiler error
 	// uint16_t u16 = someHandle1; // compiler error
+
+	printf( " ------------------------------\n" );
+}
+
+struct testThing
+{
+	float f;
+	int a;
+};
+
+float example( int32_t _i, float _f, testThing _ptr )
+{
+	return static_cast<float>( _i ) + _f;
+}
+
+void test::test_reflected_function()
+{
+	printf( " --- reflected_function test --\n" );
+
+	arg::reflected_function<example> efunc( "example" );
+	printf( "symbol: %s\n", efunc.symbol() );
+	printf( "%zu parameters\n", efunc.arg_count() );
+	printf( "name:  %s %s(", efunc.ret_name(), efunc.name() );
+
+	auto names = efunc.arg_names();
+	for( size_t i = 0; i < names.size(); i++ )
+	{
+		if( i != 0 )
+			printf( ", " );
+		printf( "%s", names[ i ] );
+	}
+	printf( ")\n" );
+
+	printf( "%f\n", efunc( 3, 0.141592, testThing{} ) );
+
+	printf( " ------------------------------\n" );
 }

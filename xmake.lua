@@ -1,7 +1,10 @@
 
-set_symbols( "debug" )
-set_optimize( "none" )
+
 set_languages( "cxx17" )
+
+
+add_rules("mode.debug")
+add_rules("mode.release")
 
 target( "unordered_array" )
     set_kind( "binary" )
