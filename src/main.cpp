@@ -6,6 +6,9 @@
 #include <typeinfo>
 #include <vector>
 #include <array>
+#include <string>
+
+#include <typename_of.hpp>
 
 struct test_struct
 {
@@ -15,36 +18,30 @@ struct test_struct
 };
 
 
-template<typename _Ty> struct typename_of;
-template<typename _Ty> struct typename_of<_Ty*> { using Ty = _Ty; };
-template <typename _Ty, typename _Mty> struct typename_of<_Ty _Mty::*> { using Ty = _Ty; };
-
-struct memvar_base { virtual void set( void* ) = 0; };
+struct memvar_base { virtual void set( const char* ) = 0; };
 template<typename _Ty>
 struct memvar : public memvar_base
 {
-	virtual void set( void* _data ) override { 
-		printf( "%i\n", (_Ty*)( _data ) );
+	virtual void set( const char* _str ) override {
+		v = arg::str_to_T<_Ty>( _str );
+		printf( "%s\n", _str );
 	}
+
+	_Ty v;
 };
 
-template<typename _Ty, auto _Ty::*ptr>
-void dothing(){
-	printf("%s", typeid( typename_of<decltype( ptr )>::Ty ).name() );
-}
-
-template<typename _Ty, auto _Ty::*ptr>
-const char* mname()
-{
-	return typeid( typename_of<decltype( ptr )>::Ty ).name();
-}
-
 template<typename _Ty, auto _Ty::* ..._Members>
-void refl_struct( const std::array<const char*, sizeof...( _Members )>& _names )
+void refl_struct( const std::array<const char*, sizeof...( _Members )>& _names ) 
 {
-	std::vector<const char*> types{ mname<_Ty, _Members>()... };
+	std::vector<const char*> types{ arg::member_name<_Ty, _Members>()... };
+	std::vector<memvar_base*> membs{ new memvar<arg::typename_of<decltype( _Members )>::Ty>()... };
+
 	for( size_t i = 0; i < sizeof...( _Members ); i++ )
+	{
 		printf( "%s %s::%s\n", types[ i ], typeid( _Ty ).name(), _names[ i ] );
+
+		membs[ i ]->set( "3.3" );
+	}
 		
 }
 
