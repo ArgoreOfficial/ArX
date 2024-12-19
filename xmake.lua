@@ -1,6 +1,7 @@
 
-set_symbols("debug")
-set_optimize("none")
+set_symbols( "debug" )
+set_optimize( "none" )
+set_languages( "cxx17" )
 
 target( "unordered_array" )
     set_kind( "binary" )
@@ -15,4 +16,5 @@ target( "unordered_array" )
         "**.hpp" 
         )
     add_files( "**.cpp" )
+    add_includedirs( "unordered_array" )
 target_end()

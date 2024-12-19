@@ -1,3 +1,4 @@
 ﻿.xmake
 bin
 build
+.vscode
