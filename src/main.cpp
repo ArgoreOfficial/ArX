@@ -33,19 +33,6 @@ struct memvar : public member_base
 	}
 };
 
-template<typename _Ty, arg::typeval _Tval = arg::typeval_of<_Ty>::ty>
-struct ttest
-{
-	static const int a = 0;
-};
-
-template<typename _Ty>
-struct ttest<_Ty, arg::typeval::member_function>
-{
-	static const int a = 1;
-};
-
-
 template<typename _Ty, auto _Ty::* ..._Members>
 struct reflected_struct : typed_obj
 {
@@ -53,18 +40,17 @@ struct reflected_struct : typed_obj
 		std::vector<const char*> types{ arg::member_name<_Ty, _Members>()... };
 		//std::vector<member_base*> membs{ new memvar<arg::typename_of<decltype( _Members )>::Ty>()... };
 		std::vector<arg::typeval> realTypes{ arg::typeval_of<decltype( _Members )>::ty... };
-		std::vector<int> realTypes2{ ttest<decltype( _Members )>::a... };
-
+		
 		for( size_t i = 0; i < sizeof...( _Members ); i++ )
 			printf( "%s %s::%s\n", types[ i ], typeid( _Ty ).name(), _names[ i ] );
 
 	}
 
-	// void set( const char* _member, const char* _value );
-	void* create( void* _pBase ) { _create( _pBase ) }
+	void* create( void* _pBase = nullptr ) { return _create( (_Ty*)_pBase ); }
+	void set( const char* _member, const char* _value );
 
 private:
-	_Ty* _create( _Ty* _pBase = nullptr ) {
+	_Ty* _create( _Ty* _pBase ) {
 		if( _pBase )
 			return new( _pBase ) _Ty{};
 		else
@@ -77,8 +63,24 @@ private:
 
 int test2() { return 0; }
 
+typedef reflected_struct<
+		test_struct,
+		&test_struct::member_int,
+		&test_struct::member_float,
+		&test_struct::member_char,
+		&test_struct::dothing2> 
+	test_struct_refl;
+#define test_struct_refl_names { "member_int", "member_float", "member_char", "dothing2" }
+
 int main()
 {
+	test::test_unordered_array();
+	test::test_strong_type();
+	test::test_reflected_function();
+	test::test_typeval_of();
+
+	printf( " ::---- reflected_struct test ---::\n" );
+
 	std::vector<arg::typeval> tps{
 		arg::typeval_of<decltype( &test_struct::dothing2 )>::ty,
 		arg::typeval_of<decltype( &test_struct::member_char )>::ty,
@@ -86,19 +88,15 @@ int main()
 		arg::typeval_of<decltype( &test2 )>::ty
 	};
 
-	reflected_struct<
-		test_struct, 
-		&test_struct::member_int, 
-		&test_struct::member_float, 
-		&test_struct::member_char,
-		&test_struct::dothing2> 
-	mystruct( { "member_int", "member_float", "member_char", "dothing2" });
+	test_struct_refl mystruct( test_struct_refl_names );
 	
-	/*
-	test::test_unordered_array();
-	test::test_strong_type();
-	test::test_reflected_function();
-	*/
+	std::vector<test_struct*> testStructs;
+
+	testStructs.push_back( (test_struct*)mystruct.create() );
+	testStructs.push_back( (test_struct*)mystruct.create() );
+	testStructs.push_back( (test_struct*)mystruct.create() );
+
+	printf( " ::------------------------------::\n\n" );
 
 	return 0;
 }

@@ -55,13 +55,13 @@ struct typeval_of<_Ty _Mty::*> {
 
 
 template<typename T>
-T str_to_T( const char* _str ) {
+static T str_to_T( const char* _str ) {
 	return static_cast<T>( str_to_T<int32_t>( _str ) );
 }
 
-template<> const char* str_to_T<const char*>( const char* _str ) { return _str; }
-template<> int32_t     str_to_T<int32_t>    ( const char* _str ) { return std::stoi( _str ); }
-template<> float       str_to_T<float>      ( const char* _str ) { return std::stof( _str ); }
+template<> static const char* str_to_T<const char*>( const char* _str ) { return _str; }
+template<> static int32_t     str_to_T<int32_t>    ( const char* _str ) { return std::stoi( _str ); }
+template<> static float       str_to_T<float>      ( const char* _str ) { return std::stof( _str ); }
 
 
 }

@@ -3,6 +3,7 @@
 #include <unordered_array.hpp>
 #include <strong_type.hpp>
 #include <reflected_function.hpp>
+#include <typename_of.hpp>
 
 #include <stdio.h>
 
@@ -15,7 +16,7 @@ struct abstract_car
 
 void test::test_unordered_array()
 {
-	printf( " ---- unordered_array test ----\n" );
+	printf( " ::---- unordered_array test ----::\n" );
 	
 	{
 		arg::unordered_array<uint16_t, const char*> names;
@@ -54,7 +55,7 @@ void test::test_unordered_array()
 	printf( "%s weighs %fkg\n", cars.at( saabID ).strName, cars.at( saabID ).weightInKg );
 	printf( "%s weighs %fkg\n", cars[ robinID ].strName, cars[ robinID ].weightInKg );
 
-	printf( " ------------------------------\n" );
+	printf( " ::------------------------------::\n\n" );
 }
 
 void test::test_array_view()
@@ -71,7 +72,7 @@ static uint16_t get_strong_value( handle1_t _t ) {
 
 void test::test_strong_type()
 {
-	printf( " ------ strong_type test ------\n" );
+	printf( " ::------ strong_type test ------::\n" );
 	
 	handle1_t someHandle1{ 1 };
 	handle2_t someHandle2{ 2 };
@@ -80,7 +81,7 @@ void test::test_strong_type()
 	// printf( "%i", get_strong_value( someHandle2 ) ); // strong type mismatch, compiler error
 	// uint16_t u16 = someHandle1; // compiler error
 
-	printf( " ------------------------------\n" );
+	printf( " ::------------------------------::\n\n" );
 }
 
 struct testThing
@@ -96,7 +97,7 @@ float example( int32_t _i, float _f, testThing _ptr )
 
 void test::test_reflected_function()
 {
-	printf( " --- reflected_function test --\n" );
+	printf( " ::--- reflected_function test --::\n" );
 
 	arg::reflected_function<example> efunc( "example" );
 	printf( "symbol: %s\n", efunc.symbol() );
@@ -114,5 +115,50 @@ void test::test_reflected_function()
 
 	printf( "%f\n", efunc( 3, 0.141592, testThing{} ) );
 
-	printf( " ------------------------------\n" );
+	printf( " ::------------------------------::\n\n" );
+}
+
+
+void type_test_func() {}
+struct type_test_struct
+{
+	void type_test_mfunc() {}
+	int type_test_mint;
+};
+
+const char* typeval2str( arg::typeval _tval ) {
+
+	switch( _tval )
+	{
+	case arg::type:            return "type      "; break;
+	case arg::type_pointer:    return "type*     "; break;
+	case arg::function:        return "function  "; break;
+	case arg::member_variable: return "m_variable"; break;
+	case arg::member_function: return "m_function"; break;
+	}
+
+	return "unknown";
+}
+
+template<typename _Ty, arg::typeval _Tval = arg::typeval_of<_Ty>::ty>
+struct type_test
+{
+	static void print() {
+		printf( "%s :-: %s\n", typeval2str( _Tval ), typeid( _Ty ).name() );
+	}
+};
+
+void test::test_typeval_of()
+{
+	printf( " ::------- typeval_of test ------::\n" );
+	int test_int = 0;
+
+	type_test<int>::print();
+	type_test<decltype( &type_test_func )>::print();
+	type_test<decltype( &test_int )>::print();
+
+	type_test<type_test_struct>::print();
+	type_test<decltype( &type_test_struct::type_test_mint )>::print();
+	type_test<decltype( &type_test_struct::type_test_mfunc )>::print();
+	printf( " ::------------------------------::\n\n" );
 }
