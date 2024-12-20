@@ -20,57 +20,86 @@ struct test_struct
 };
 
 struct typed_obj {};
-struct member_base : public typed_obj { 
-	virtual void set( const char* ) = 0; 
+struct type_member_base : public typed_obj { 
+	const char* m_name = 0;
+	const char* m_typename = 0;
+	size_t m_offset = 0;
 };
 
 template<typename _Ty>
-struct memvar : public member_base
-{
-	virtual void set( const char* _str ) override {
-		//v = arg::str_to_T<_Ty>( _str );
-		printf( "%s\n", _str );
+struct type_member : public type_member_base { 
+	type_member( size_t _offset )
+	{
+		m_typename = typeid( _Ty ).name();
+		m_offset = _offset;
 	}
 };
+
+template<typename _Ty>
+struct type_layout_base {
+	std::vector<type_member_base*> members{};
+};
+
+template <typename T1, typename T2>
+inline size_t constexpr offset_of( T1 T2::* member ) {
+	constexpr T2 object{};
+	return size_t( &( object.*member ) ) - size_t( &object );
+}
+
+template<typename _Ty, typename _Rty, typename... _Args>
+inline size_t constexpr offset_of( _Rty( _Ty::*_member )( _Args... ) ) {
+	//constexpr T2 object{};
+	//return size_t( &( object.*member ) ) - size_t( &object );
+	return (size_t)&_member;
+}
 
 template<typename _Ty, auto _Ty::* ..._Members>
-struct reflected_struct : typed_obj
+struct type_layout : public type_layout_base<_Ty>
 {
-	reflected_struct( const std::array<const char*, sizeof...( _Members )>& _names ) {
-		std::vector<const char*> types{ arg::member_name<_Ty, _Members>()... };
-		//std::vector<member_base*> membs{ new memvar<arg::typename_of<decltype( _Members )>::Ty>()... };
-		std::vector<arg::typeval> realTypes{ arg::typeval_of<decltype( _Members )>::ty... };
+	type_layout( const std::array<const char*, sizeof...( _Members )>& _names ) {
+		members = {
+			new type_member<arg::typename_of<decltype( _Members )>::Ty>( offset_of( _Members ) )...
+		};
 		
 		for( size_t i = 0; i < sizeof...( _Members ); i++ )
-			printf( "%s %s::%s\n", types[ i ], typeid( _Ty ).name(), _names[ i ] );
+			printf( "%s [%zu] %s::%s\n", members[ i ]->m_typename, members[ i ]->m_offset, typeid( _Ty ).name(), _names[ i]  );
 
 	}
-
-	void* create( void* _pBase = nullptr ) { return _create( (_Ty*)_pBase ); }
-	void set( const char* _member, const char* _value );
 
 private:
-	_Ty* _create( _Ty* _pBase ) {
-		if( _pBase )
-			return new( _pBase ) _Ty{};
-		else
-			return new _Ty{};
-	}
-
-	_Ty* m_pObj{ nullptr };
 
 };
 
-int test2() { return 0; }
+template<typename _Ty>
+struct type_descriptor
+{
+	type_descriptor( type_layout_base<_Ty> _layout ) { }
 
-typedef reflected_struct<
+	_Ty* register_ptr( _Ty* _ptr ) {
+
+	}
+	
+	void set( const char* _member, void* _value ) 
+	{
+		for( type_member_base* m : layout.members )
+		{
+			if( m->m_name == _member )
+				printf( "set %s to something\n", _member );
+		}
+	}
+
+	std::vector<_Ty*> m_objects;
+	type_layout_base<_Ty> layout;
+};
+
+typedef type_layout<
 		test_struct,
 		&test_struct::member_int,
 		&test_struct::member_float,
 		&test_struct::member_char,
 		&test_struct::dothing2> 
-	test_struct_refl;
-#define test_struct_refl_names { "member_int", "member_float", "member_char", "dothing2" }
+	test_struct_layout;
+#define test_struct_member_names { "member_int", "member_float", "member_char", "dothing2" }
 
 int main()
 {
@@ -78,23 +107,16 @@ int main()
 	test::test_strong_type();
 	test::test_reflected_function();
 	test::test_typeval_of();
+	
+	printf( " ::------ type_layout test ------::\n" );
+	
+	test_struct coolthing;
 
-	printf( " ::---- reflected_struct test ---::\n" );
-
-	std::vector<arg::typeval> tps{
-		arg::typeval_of<decltype( &test_struct::dothing2 )>::ty,
-		arg::typeval_of<decltype( &test_struct::member_char )>::ty,
-		arg::typeval_of<int>::ty,
-		arg::typeval_of<decltype( &test2 )>::ty
+	type_descriptor<test_struct> test_struct_set{ 
+		test_struct_layout{ test_struct_member_names } 
 	};
 
-	test_struct_refl mystruct( test_struct_refl_names );
-	
-	std::vector<test_struct*> testStructs;
-
-	testStructs.push_back( (test_struct*)mystruct.create() );
-	testStructs.push_back( (test_struct*)mystruct.create() );
-	testStructs.push_back( (test_struct*)mystruct.create() );
+	test_struct_set.set( "member_int", 0 );
 
 	printf( " ::------------------------------::\n\n" );
 
