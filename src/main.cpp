@@ -8,7 +8,7 @@
 #include <array>
 #include <string>
 
-#include <typename_of.hpp>
+#include <arx/typename_of.hpp>
 
 struct test_struct
 {
@@ -58,7 +58,7 @@ struct type_layout : public type_layout_base<_Ty>
 {
 	type_layout( const std::array<const char*, sizeof...( _Members )>& _names ) {
 		members = {
-			new type_member<arg::typename_of<decltype( _Members )>::Ty>( offset_of( _Members ) )...
+			new type_member<arx::typename_of<decltype( _Members )>::Ty>( offset_of( _Members ) )...
 		};
 		
 		for( size_t i = 0; i < sizeof...( _Members ); i++ )
@@ -103,11 +103,12 @@ typedef type_layout<
 
 int main()
 {
-	test::test_unordered_array();
-	test::test_strong_type();
-	test::test_reflected_function();
-	test::test_typeval_of();
-	
+	arxTest::test_unordered_array();
+	arxTest::test_strong_type();
+	arxTest::test_reflected_function();
+	arxTest::test_typeval_of();
+	arxTest::test_ptr_reloc();
+
 	printf( " ::------ type_layout test ------::\n" );
 	
 	test_struct coolthing;

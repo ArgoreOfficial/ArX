@@ -1,15 +1,13 @@
 
-
 set_languages( "cxx17" )
-
 
 add_rules("mode.debug")
 add_rules("mode.release")
 
-target( "unordered_array" )
+target( "ArX" )
     set_kind( "binary" )
     
-    set_basename("unordered_array_test_$(mode)_$(arch)")
+    set_basename("ArX_test_$(mode)_$(arch)")
 
     set_targetdir "bin"
     set_objectdir "build/obj"
@@ -19,5 +17,5 @@ target( "unordered_array" )
         "**.hpp" 
         )
     add_files( "**.cpp" )
-    add_includedirs( "unordered_array" )
+    add_includedirs( "include/" )
 target_end()

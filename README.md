@@ -1,4 +1,10 @@
-# unordered_array
+# ArX - Argore Cross-Project Library
+classes and functions I use in several projects, all combined in one project!
+
+README TODO
+
+
+# arx::unordered_array
 
 ### Why?
 
@@ -20,7 +26,7 @@ struct SomeObject
 };
 
 
-arg::unordered_array<ID, SomeObject> objects;
+arx::unordered_array<ID, SomeObject> objects;
 ID id1 = objects.emplace( "object1", 42 );
 ID id2 = objects.emplace( "object2", 11 );
 

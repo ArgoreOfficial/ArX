@@ -1,9 +1,11 @@
 #include "test.hpp"
 
-#include <unordered_array.hpp>
-#include <strong_type.hpp>
-#include <reflected_function.hpp>
-#include <typename_of.hpp>
+#include <arx/unordered_array.hpp>
+#include <arx/strong_type.hpp>
+#include <arx/reflected_function.hpp>
+#include <arx/typename_of.hpp>
+#include <arx/detour.hpp>
+#include <arx/ptr_reloc.hpp>
 
 #include <stdio.h>
 
@@ -14,12 +16,12 @@ struct abstract_car
 	float weightInKg;
 };
 
-void test::test_unordered_array()
+void arxTest::test_unordered_array()
 {
 	printf( " ::---- unordered_array test ----::\n" );
 	
 	{
-		arg::unordered_array<uint16_t, const char*> names;
+		arx::unordered_array<uint16_t, const char*> names;
 
 		printf( "size:   %zu\ncount:  %zu\n\n", names.size(), names.count() );
 
@@ -48,7 +50,7 @@ void test::test_unordered_array()
 		printf( "size:   %zu\ncount:  %zu\n\n", names.size(), names.count() );
 	}
 
-	arg::unordered_array<uint16_t, abstract_car> cars;
+	arx::unordered_array<uint16_t, abstract_car> cars;
 	uint16_t saabID  = cars.emplace( "Saab 95 v4", 4, 946.0f );
 	uint16_t robinID = cars.emplace( "Reliant Robin", 3, 436.0f );
 
@@ -58,19 +60,19 @@ void test::test_unordered_array()
 	printf( " ::------------------------------::\n\n" );
 }
 
-void test::test_array_view()
+void arxTest::test_array_view()
 {
 
 }
 
-typedef arg::strong_type<uint16_t, struct handle1_kt> handle1_t;
-typedef arg::strong_type<uint16_t, struct handle2_kt> handle2_t;
+typedef arx::strong_type<uint16_t, struct handle1_kt> handle1_t;
+typedef arx::strong_type<uint16_t, struct handle2_kt> handle2_t;
 
 static uint16_t get_strong_value( handle1_t _t ) { 
 	return _t.value; 
 }
 
-void test::test_strong_type()
+void arxTest::test_strong_type()
 {
 	printf( " ::------ strong_type test ------::\n" );
 	
@@ -95,11 +97,11 @@ float example( int32_t _i, float _f, testThing _ptr )
 	return static_cast<float>( _i ) + _f;
 }
 
-void test::test_reflected_function()
+void arxTest::test_reflected_function()
 {
 	printf( " ::--- reflected_function test --::\n" );
 
-	arg::reflected_function<example> efunc( "example" );
+	arx::reflected_function<example> efunc( "example" );
 	printf( "symbol: %s\n", efunc.symbol() );
 	printf( "%zu parameters\n", efunc.arg_count() );
 	printf( "name:  %s %s(", efunc.ret_name(), efunc.name() );
@@ -126,21 +128,21 @@ struct type_test_struct
 	int type_test_mint;
 };
 
-const char* typeval2str( arg::typeval _tval ) {
+const char* typeval2str( arx::typeval _tval ) {
 
 	switch( _tval )
 	{
-	case arg::type:            return "type      "; break;
-	case arg::type_pointer:    return "type*     "; break;
-	case arg::function:        return "function  "; break;
-	case arg::member_variable: return "m_variable"; break;
-	case arg::member_function: return "m_function"; break;
+	case arx::type:            return "type      "; break;
+	case arx::type_pointer:    return "type*     "; break;
+	case arx::function:        return "function  "; break;
+	case arx::member_variable: return "m_variable"; break;
+	case arx::member_function: return "m_function"; break;
 	}
 
 	return "unknown";
 }
 
-template<typename _Ty, arg::typeval _Tval = arg::typeval_of<_Ty>::ty>
+template<typename _Ty, arx::typeval _Tval = arx::typeval_of<_Ty>::ty>
 struct type_test
 {
 	static void print() {
@@ -148,7 +150,7 @@ struct type_test
 	}
 };
 
-void test::test_typeval_of()
+void arxTest::test_typeval_of()
 {
 	printf( " ::------- typeval_of test ------::\n" );
 	int test_int = 0;
@@ -160,5 +162,26 @@ void test::test_typeval_of()
 	type_test<type_test_struct>::print();
 	type_test<decltype( &type_test_struct::type_test_mint )>::print();
 	type_test<decltype( &type_test_struct::type_test_mfunc )>::print();
+	printf( " ::------------------------------::\n\n" );
+}
+
+void fptr_reloc( int _i )
+{
+	printf( "Relocated function called.\n" );
+	printf( "    _i   == %i\n", _i );
+	printf( "    fptr == [%p]\n", &fptr_reloc );
+}
+
+void arxTest::test_ptr_reloc()
+{
+	printf( " ::------- ptr_reloc test -------::\n" );
+	
+	arx::ptr_reloc<int> int_ptr{ 0x0 };
+	printf( "int at [%p] is %d\n", int_ptr.ptr, *int_ptr );
+
+	arx::ptr_reloc<decltype( fptr_reloc )> fptr{ 0x0 };
+	fptr.fptr = &fptr_reloc; // quick hack for testing
+	fptr( 4 );
+
 	printf( " ::------------------------------::\n\n" );
 }
