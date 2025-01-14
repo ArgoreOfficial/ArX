@@ -46,6 +46,7 @@ public:
 	[[nodiscard]] _Ty& at( const _Kty& _key );
 	[[nodiscard]] _Ty& at_locked( const _Kty& _key );
 	[[nodiscard]] scoped_lock_ref<_Kty, _Ty, unordered_array<_Kty, _Ty>> at_scope_locked( const _Kty& _key );
+	[[nodiscard]] bool contains( const _Kty& _key );
 
 	[[nodiscard]] _Ty& operator[]( const _Kty& _key ) { return at( _key ); }
 
@@ -81,7 +82,7 @@ template<typename _Kty, typename _Ty>
 template<typename... Args>
 inline _Kty unordered_array<_Kty, _Ty>::emplace( const Args&... _args ) {
 	size_t key = 1;
-	while( m_keys.find( static_cast<_Kty>( key ) ) != m_keys.end() ) // find an unused key
+	while( contains( static_cast<_Kty>( key ) ) ) // find an unused key
 		key++;
 		
 	if( key >= m_size )
@@ -126,6 +127,11 @@ inline scoped_lock_ref<_Kty, _Ty, unordered_array<_Kty, _Ty>> unordered_array<_K
 }
 
 template<typename _Kty, typename _Ty>
+inline bool unordered_array<_Kty, _Ty>::contains( const _Kty& _key ) {
+	return m_keys.count( _key ) != 0;
+}
+
+template<typename _Kty, typename _Ty>
 inline void unordered_array<_Kty, _Ty>::erase( const _Kty& _key ) {
 	m_keys.erase( _key );
 
@@ -138,8 +144,12 @@ inline void unordered_array<_Kty, _Ty>::erase( const _Kty& _key ) {
 
 template<typename _Kty, typename _Ty>
 inline void unordered_array<_Kty, _Ty>::clear() {
-	for( auto& handle : m_keys )
-		erase( handle );
+	std::vector<_Kty> keysToErase{};
+	for( auto& key : m_keys )
+		keysToErase.push_back( key );
+	for( auto& key : keysToErase )
+		erase( key );
+		
 	m_keys.clear();
 }
 

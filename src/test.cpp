@@ -54,6 +54,9 @@ void arxTest::test_unordered_array()
 	uint16_t saabID  = cars.emplace( "Saab 95 v4", 4, 946.0f );
 	uint16_t robinID = cars.emplace( "Reliant Robin", 3, 436.0f );
 
+	printf( "cars does%s contain '%i'\n", cars.contains( saabID ) ? "" : " not", (int)saabID );
+	printf( "cars does%s contain '%i'\n\n", cars.contains( 5 ) ? "" : " not", 5 );
+
 	printf( "%s weighs %fkg\n", cars.at( saabID ).strName, cars.at( saabID ).weightInKg );
 	printf( "%s weighs %fkg\n", cars[ robinID ].strName, cars[ robinID ].weightInKg );
 
