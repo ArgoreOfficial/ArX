@@ -101,6 +101,69 @@ typedef type_layout<
 	test_struct_layout;
 #define test_struct_member_names { "member_int", "member_float", "member_char", "dothing2" }
 
+/////////////////////////////////////////////////////////////////
+//// ArXFX Brainstorming                                     ////
+/////////////////////////////////////////////////////////////////
+
+#include <arx/strong_type.hpp>
+#define ARXFX_BACKEND_VK
+
+namespace arx {
+
+// arxfx/core/
+struct pipeline_interface {
+	std::string name;
+};
+
+// arxfx/vk/
+struct pipeline_vk : pipeline_interface {
+	/* VkPipeline m_pipeline; */
+};
+
+typedef strong_type<uint16_t, struct _PipelineID> pipeline_id;
+
+#ifdef ARXFX_BACKEND_VK
+typedef pipeline_vk pipeline;
+#elif defined( ARXFX_BACKEND_GL )
+typedef pipeline_gl pipeline;
+#elif defined( ARXFX_BACKEND_MTL )
+typedef pipeline_mtl pipeline;
+#else
+#error no backend defined
+#endif
+
+}
+
+/////////////////////////////////////////////////////////////////
+
+template<typename _Ty> struct shader;
+template<> struct shader<struct base> { 
+	void basefunc() { printf( "test\n" ); }
+	int someBase; 
+};
+
+template<> 
+struct shader<struct vk> : shader<struct base>
+{
+	void print() { printf( "vk shader\n" ); }
+	int someVkThing;
+};
+
+template<>
+struct shader<struct gl> : shader<struct base>
+{
+	void print() { printf( "gl shader\n" ); }
+	int someGlThing;
+};
+
+template<typename _Ty>
+struct gfx_device
+{
+	shader<_Ty> m_shader{};
+};
+
+/////////////////////////////////////////////////////////////////
+
 int main()
 {
 	arxTest::test_unordered_array();
@@ -117,9 +180,19 @@ int main()
 		test_struct_layout{ test_struct_member_names } 
 	};
 
+
 	test_struct_set.set( "member_int", 0 );
 
 	printf( " ::------------------------------::\n\n" );
+
+	gfx_device<struct vk> vkDevice{};
+	gfx_device<struct gl> glDevice{};
+
+	vkDevice.m_shader.basefunc();
+	vkDevice.m_shader.print();
+
+	glDevice.m_shader.basefunc();
+	glDevice.m_shader.print();
 
 	return 0;
 }
