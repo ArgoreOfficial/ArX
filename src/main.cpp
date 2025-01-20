@@ -164,6 +164,36 @@ struct gfx_device
 
 /////////////////////////////////////////////////////////////////
 
+struct someObject {
+	float value = 0.0f;
+};
+
+struct cAssetManager
+{
+
+	template<typename _Ty, typename ... _Args>
+	static _Ty* load( const std::string& _path, _Args... _args );
+
+	template<typename _Ty, typename ... _Args>
+	static _Ty* load( uint8_t* _pData, size_t _sizeData, _Args... _args );
+};
+
+template<>
+static someObject* cAssetManager::load<someObject, float>( const std::string& _path, float _value )
+{
+	someObject* s = new someObject();
+	s->value = _value;
+	return s;
+}
+
+template<>
+static someObject* cAssetManager::load<someObject, float>( uint8_t* _pData, size_t _sizeData, float _value )
+{
+	someObject* s = new someObject();
+	s->value = _value;
+	return s;
+}
+
 int main()
 {
 	arxTest::test_unordered_array();
@@ -193,6 +223,13 @@ int main()
 
 	glDevice.m_shader.basefunc();
 	glDevice.m_shader.print();
+	
+	// ignore this
+	// load object from file                                 path                   user-variable
+	someObject* theObject = cAssetManager::load<someObject>( "file/someobject.ini", 1.0f );
+	// load object from data
+	uint8_t dat[] = { 0, 1, 23, 12, 3, 123, 1 };
+	someObject* theOtherObject = cAssetManager::load<someObject>( dat, sizeof( dat ), 1.0f);
 
 	return 0;
 }
