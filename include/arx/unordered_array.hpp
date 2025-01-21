@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <set>
 #include <shared_mutex>
+#include <vector>
 
 namespace arx {
 
