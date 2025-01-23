@@ -1,6 +1,13 @@
 #include <stdio.h>
 
 #include "test.hpp"
+#include "tests/test_array_view.hpp"
+#include "tests/test_ptr_reloc.hpp"
+#include "tests/test_reflected_function.hpp"
+#include "tests/test_registry.hpp"
+#include "tests/test_strong_type.hpp"
+#include "tests/test_unordered_array.hpp"
+
 #include <stdint.h>
 
 #include <typeinfo>
@@ -223,13 +230,15 @@ public:
 };
 
 
+
 int main()
 {
-	arxTest::test_unordered_array();
-	arxTest::test_strong_type();
-	arxTest::test_reflected_function();
-	arxTest::test_typeval_of();
-	arxTest::test_ptr_reloc();
+	arx::test_array_view();
+	arx::test_ptr_reloc();
+	arx::test_reflected_function();
+	arx::test_registry();
+	arx::test_strong_type();
+	arx::test_unordered_array();
 
 	printf( " ::------ type_layout test ------::\n" );
 	
@@ -263,8 +272,8 @@ int main()
 
 
 	tester asd2;
-
 	//asd2.bobber = 3;
+
 
 	return 0;
 }
