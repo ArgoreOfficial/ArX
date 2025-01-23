@@ -194,6 +194,35 @@ static someObject* cAssetManager::load<someObject, float>( uint8_t* _pData, size
 	return s;
 }
 
+
+
+
+template<typename _Oty, typename _Ty>
+struct public_read
+{
+	public_read() = default;
+	public_read( _Ty _v ) : m_value{ _v } {}
+
+private:
+	friend _Oty;
+	void operator=( _Ty _v ) { m_value = _v; }
+
+	_Ty m_value;
+};
+
+class tester
+{
+public:
+	tester()
+	{
+		bobber = 2;
+	}
+
+	public_read<tester, int> bobber{ 3 };
+
+};
+
+
 int main()
 {
 	arxTest::test_unordered_array();
@@ -230,6 +259,12 @@ int main()
 	// load object from data
 	uint8_t dat[] = { 0, 1, 23, 12, 3, 123, 1 };
 	someObject* theOtherObject = cAssetManager::load<someObject>( dat, sizeof( dat ), 1.0f);
+
+
+
+	tester asd2;
+
+	//asd2.bobber = 3;
 
 	return 0;
 }
