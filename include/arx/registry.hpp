@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string>
 #include <unordered_map>
+#include <type_traits>
 
 namespace arx
 {
@@ -31,10 +32,12 @@ template<typename _Ty, typename _Pty>
 class registar : public _Pty
 {
 public:
+	static_assert( std::is_base_of_v<registry<_Pty>, _Pty>, "_Pty must derive from registry<_Pty>" );
+	static_assert( std::is_convertible_v<_Pty*, registry<_Pty>*>, "_Pty must inherit registry<_Pty> as public" );
+	static_assert( std::is_convertible_v<_Ty*, registar<_Ty, _Pty>*>, "_Ty must inherit registar<_Ty, _Pty> as public" );
+
 	struct entry
 	{
-		static_assert( std::is_base_of_v<registry, _Pty>, "_Pty must derive from registry<_Pty>" );
-		
 		typedef _Pty* ( *allocator_fptr_t )( void* );
 
 	private:
