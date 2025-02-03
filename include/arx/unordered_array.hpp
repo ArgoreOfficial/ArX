@@ -1,5 +1,8 @@
 #pragma once
+
+#ifdef _MSC_VER
 #pragma warning( disable : 4267 )
+#endif
 
 #include <cstring>
 #include <stdint.h>
@@ -35,11 +38,7 @@ public:
 	~unordered_array() {
 		clear();
 
-		if( m_pBuffer )
-			free( m_pBuffer );
-
-		m_pBuffer = nullptr;
-		m_size = 0;
+		m_buffer.clear();
 	}
 
 	template<typename...Args>
@@ -55,11 +54,13 @@ public:
 	void clear();
 	
 	size_t count( void ) { return m_keys.size(); }
-	size_t size ( void ) { return m_size; }
+	size_t size ( void ) { return m_buffer.size(); }
 
 	void lock( const _Kty& _key ) { 
+	#ifdef __cpp_exceptions
 		if( m_lockedkeys.find( _key ) == m_lockedkeys.end() )
 			throw std::runtime_error( "Attemping to lock already locked key" );
+	#endif
 
 		m_lockedkeys.insert( _key ); 
 		m_sharedMutex.lock_shared(); 
@@ -72,10 +73,9 @@ public:
 
 private:
 
-	std::set<_Kty> m_keys;
-	std::set<_Kty> m_lockedkeys;
-	_Ty* m_pBuffer = nullptr;
-	size_t m_size = 0;
+	std::set<_Kty> m_keys{};
+	std::set<_Kty> m_lockedkeys{};
+	std::vector<_Ty> m_buffer{};
 	std::shared_mutex m_sharedMutex{};
 };
 
@@ -86,34 +86,26 @@ inline _Kty unordered_array<_Kty, _Ty>::emplace( const Args&... _args ) {
 	while( contains( static_cast<_Kty>( key ) ) ) // find an unused key
 		key++;
 		
-	if( key >= m_size )
+	m_sharedMutex.lock();
+	if( key > m_buffer.size() )
 	{
-		m_sharedMutex.lock();
-
-		_Ty* newptr = (_Ty*)realloc( m_pBuffer, key * sizeof( _Ty ) );
-
-		if( newptr == nullptr )
-			throw std::runtime_error( "failed to reallocate buffer" );
-			
-		m_pBuffer = newptr;
-		m_size = key;
-
-		m_sharedMutex.unlock();
+		m_buffer.push_back( _Ty{ _args... } );
 	}
-
-	size_t index = key - 1; // index is key-1 because key 0 is invalid/none
-	_Ty* base = m_pBuffer + index;
-	_Ty* obj = new( base )_Ty{ _args... }; obj;
+	else
+	{
+		size_t index = key - 1; // index is key-1 because key 0 is invalid/none
+		m_buffer[ index] = _Ty{ _args... };
+	}
+	m_sharedMutex.unlock();
 
 	m_keys.insert( (_Kty)key );
-
 	return (_Kty)key;
 }
 
 template<typename _Kty, typename _Ty>
 inline _Ty& unordered_array<_Kty, _Ty>::at( const _Kty& _key ) {
-	size_t index = _key - 1;
-	return m_pBuffer[ index ];
+	size_t index = (size_t)_key - 1;
+	return m_buffer[ index ];
 }
 
 template<typename _Kty, typename _Ty>
@@ -136,11 +128,8 @@ template<typename _Kty, typename _Ty>
 inline void unordered_array<_Kty, _Ty>::erase( const _Kty& _key ) {
 	m_keys.erase( _key );
 
-	size_t index = _key - 1;
-	_Ty& obj = m_pBuffer[ index ];
-	obj.~_Ty();
-
-	memset( &obj, 0, sizeof( _Ty ) );
+	size_t index = (size_t)_key - 1;
+	m_buffer[ index ] = _Ty{};
 }
 
 template<typename _Kty, typename _Ty>
@@ -156,4 +145,6 @@ inline void unordered_array<_Kty, _Ty>::clear() {
 
 }
 
+#ifdef _MSC_VER
 #pragma warning( default : 4267 )
+#endif
