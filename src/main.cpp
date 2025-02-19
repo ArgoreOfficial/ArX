@@ -16,6 +16,7 @@
 #include <string>
 
 #include <wv/typename_of.hpp>
+#include "wip/type_descriptor.h"
 
 struct test_struct
 {
@@ -24,79 +25,6 @@ struct test_struct
 	char member_char;
 
 	void dothing2() {}
-};
-
-struct typed_obj {};
-struct type_member_base : public typed_obj { 
-	const char* m_name = 0;
-	const char* m_typename = 0;
-	size_t m_offset = 0;
-};
-
-template<typename _Ty>
-struct type_member : public type_member_base { 
-	type_member( size_t _offset )
-	{
-		m_typename = typeid( _Ty ).name();
-		m_offset = _offset;
-	}
-};
-
-template<typename _Ty>
-struct type_layout_base {
-	std::vector<type_member_base*> members{};
-};
-
-template <typename T1, typename T2>
-inline size_t constexpr offset_of( T1 T2::* member ) {
-	constexpr T2 object{};
-	return size_t( &( object.*member ) ) - size_t( &object );
-}
-
-template<typename _Ty, typename _Rty, typename... _Args>
-inline size_t constexpr offset_of( _Rty( _Ty::*_member )( _Args... ) ) {
-	//constexpr T2 object{};
-	//return size_t( &( object.*member ) ) - size_t( &object );
-	return (size_t)&_member;
-}
-
-template<typename _Ty, auto _Ty::* ..._Members>
-struct type_layout : public type_layout_base<_Ty>
-{
-	type_layout( const std::array<const char*, sizeof...( _Members )>& _names ) {
-		members = {
-			new type_member<wv::typename_of<decltype( _Members )>::Ty>( offset_of( _Members ) )...
-		};
-		
-		for( size_t i = 0; i < sizeof...( _Members ); i++ )
-			printf( "%s [%zu] %s::%s\n", members[ i ]->m_typename, members[ i ]->m_offset, typeid( _Ty ).name(), _names[ i]  );
-
-	}
-
-private:
-
-};
-
-template<typename _Ty>
-struct type_descriptor
-{
-	type_descriptor( type_layout_base<_Ty> _layout ) { }
-
-	_Ty* register_ptr( _Ty* _ptr ) {
-
-	}
-	
-	void set( const char* _member, void* _value ) 
-	{
-		for( type_member_base* m : layout.members )
-		{
-			if( m->m_name == _member )
-				printf( "set %s to something\n", _member );
-		}
-	}
-
-	std::vector<_Ty*> m_objects;
-	type_layout_base<_Ty> layout;
 };
 
 typedef type_layout<
@@ -108,125 +36,146 @@ typedef type_layout<
 	test_struct_layout;
 #define test_struct_member_names { "member_int", "member_float", "member_char", "dothing2" }
 
-/////////////////////////////////////////////////////////////////
-//// ArXFX Brainstorming                                     ////
-/////////////////////////////////////////////////////////////////
-
-#include <wv/strong_type.hpp>
-#define ARXFX_BACKEND_VK
+#include <array>
+#include <unordered_map>
 
 namespace wv {
 
-// arxfx/core/
-struct pipeline_interface {
+#define INT_BYTES( _i ) _i&0xFF, ((_i&0xFF00)>>8), ((_i&0xFF0000)>>16), ((_i&0xFF000000 )>>32)
+
+#define WBIN_OFFSET_VERSION 4
+#define WBIN_OFFSET_NUM_ELEMENT WBIN_OFFSET_VERSION + 4
+
+enum WBType
+{
+	kInteger32,
+	kFloat,
+	kDouble,
+	kString,
+	kBlock
+};
+
+struct WBElement
+{
 	std::string name;
+	WBType type;
+	size_t sizeBytes;
 };
 
-// arxfx/vk/
-struct pipeline_vk : pipeline_interface {
-	/* VkPipeline m_pipeline; */
-};
 
-typedef strong_type<uint16_t, struct _PipelineID> pipeline_id;
-
-#ifdef ARXFX_BACKEND_VK
-typedef pipeline_vk pipeline;
-#elif defined( ARXFX_BACKEND_GL )
-typedef pipeline_gl pipeline;
-#elif defined( ARXFX_BACKEND_MTL )
-typedef pipeline_mtl pipeline;
-#else
-#error no backend defined
-#endif
-
-}
-
-/////////////////////////////////////////////////////////////////
-
-template<typename _Ty> struct shader;
-template<> struct shader<struct base> { 
-	void basefunc() { printf( "test\n" ); }
-	int someBase; 
-};
-
-template<> 
-struct shader<struct vk> : shader<struct base>
+struct WBLayout
 {
-	void print() { printf( "vk shader\n" ); }
-	int someVkThing;
-};
-
-template<>
-struct shader<struct gl> : shader<struct base>
-{
-	void print() { printf( "gl shader\n" ); }
-	int someGlThing;
-};
-
-template<typename _Ty>
-struct gfx_device
-{
-	shader<_Ty> m_shader{};
-};
-
-/////////////////////////////////////////////////////////////////
-
-struct someObject {
-	float value = 0.0f;
-};
-
-struct cAssetManager
-{
-
-	template<typename _Ty, typename ... _Args>
-	static _Ty* load( const std::string& _path, _Args... _args );
-
-	template<typename _Ty, typename ... _Args>
-	static _Ty* load( uint8_t* _pData, size_t _sizeData, _Args... _args );
-};
-
-template<>
-static someObject* cAssetManager::load<someObject, float>( const std::string& _path, float _value )
-{
-	someObject* s = new someObject();
-	s->value = _value;
-	return s;
-}
-
-template<>
-static someObject* cAssetManager::load<someObject, float>( uint8_t* _pData, size_t _sizeData, float _value )
-{
-	someObject* s = new someObject();
-	s->value = _value;
-	return s;
-}
-
-
-
-
-template<typename _Oty, typename _Ty>
-struct public_read
-{
-	public_read() = default;
-	public_read( _Ty _v ) : m_value{ _v } {}
-
-private:
-	friend _Oty;
-	void operator=( _Ty _v ) { m_value = _v; }
-
-	_Ty m_value;
-};
-
-class tester
-{
-public:
-	tester()
+	WBLayout( std::initializer_list<WBElement> _elements )
 	{
-		bobber = 2;
+		size_t currentOffset = 0;
+
+		for( auto element : _elements )
+		{
+			if( getOffsetOf( element.name ) != SIZE_MAX )
+				continue; // element name already exists
+
+			m_offsets[ element.name ] = currentOffset;
+
+			switch( element.type )
+			{
+			case kFloat:     currentOffset += sizeof( float );    break;
+			case kDouble:    currentOffset += sizeof( double );   break;
+			case kInteger32: currentOffset += sizeof( int32_t );  break;
+			case kString:    currentOffset += sizeof( uint64_t ); break; // offset into block memory
+			case kBlock:     currentOffset += sizeof( uint64_t ); break; // offset into block memory
+			}
+		}
 	}
 
-	public_read<tester, int> bobber{ 3 };
+	size_t getOffsetOf( const std::string& _element ) {
+		auto itr = m_offsets.find( _element );
+		if( itr == m_offsets.end() )
+			return SIZE_MAX;
+		return itr->second;
+	}
 
+private:
+	std::unordered_map<std::string, size_t> m_offsets{};
+};
+
+struct WBVersion
+{
+	uint8_t major;
+	uint8_t minor;
+	uint8_t patch;
+	uint8_t pad;
+};
+
+struct WBData
+{
+	WBData( const wv::WBLayout& _layout ):
+		m_layout{ _layout }
+	{ }
+
+	void load( uint8_t* _data, size_t _size ) {
+		if( m_pBuffer )
+			delete[] m_pBuffer;
+
+		m_pBuffer = new uint8_t[ _size ];
+		memcpy( m_pBuffer, _data, _size );
+
+		m_version     = _get<WBVersion>( WBIN_OFFSET_VERSION );
+		m_numElements = _get<uint32_t>( WBIN_OFFSET_NUM_ELEMENT );
+	}
+
+	template<typename _Ty>
+	void set( const char* _element, _Ty _value ) {
+
+	}
+
+	template<typename _Ty>
+	_Ty get( const char* _element ) {
+
+	}
+
+private:
+	size_t _getOffset( const char* _element ) {
+
+	}
+
+	template<typename _Ty>
+	_Ty _get( size_t _offset ) {
+		_Ty tmp;
+		std::memcpy( &tmp, m_pBuffer + _offset, sizeof( _Ty ) );
+		return tmp;
+	}
+
+	const wv::WBLayout m_layout;
+
+	WBVersion m_version{ 0, 0, 0, 0 };
+
+	uint32_t m_numElements{ 0 };
+	uint32_t m_blockOffset{ 0 };
+
+	uint8_t* m_pBuffer{ nullptr };
+	size_t m_sizeBuffer{ 0 };
+};
+
+}
+
+uint8_t bindata[] = {
+	'W', 'B', 'i', 'n',
+	1, 4, 2, 1,
+	INT_BYTES( 3u ),
+	INT_BYTES( UINT32_MAX )
+};
+
+struct SerializableObject
+{
+	std::string name;
+	int intValue;
+	float fValue;
+};
+
+const wv::WBLayout layout{
+	{ "name",     wv::kString },
+	{ "intValue", wv::kInteger32 },
+	{ "fValue",   wv::kFloat }
 };
 
 
@@ -248,32 +197,12 @@ int main()
 		test_struct_layout{ test_struct_member_names } 
 	};
 
-
 	test_struct_set.set( "member_int", 0 );
 
 	printf( " ::------------------------------::\n\n" );
 
-	gfx_device<struct vk> vkDevice{};
-	gfx_device<struct gl> glDevice{};
-
-	vkDevice.m_shader.basefunc();
-	vkDevice.m_shader.print();
-
-	glDevice.m_shader.basefunc();
-	glDevice.m_shader.print();
-	
-	// ignore this
-	// load object from file                                 path                   user-variable
-	someObject* theObject = cAssetManager::load<someObject>( "file/someobject.ini", 1.0f );
-	// load object from data
-	uint8_t dat[] = { 0, 1, 23, 12, 3, 123, 1 };
-	someObject* theOtherObject = cAssetManager::load<someObject>( dat, sizeof( dat ), 1.0f);
-
-
-
-	tester asd2;
-	//asd2.bobber = 3;
-
+	wv::WBData data{ layout };
+	data.load( bindata, sizeof( bindata ) );
 
 	return 0;
 }
