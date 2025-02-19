@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <arx/ptr.hpp>
+#include <wv/ptr.hpp>
 
 namespace wv
 {

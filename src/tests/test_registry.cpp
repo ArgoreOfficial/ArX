@@ -1,7 +1,7 @@
 #include "test_registry.hpp"
 
 #include <stdio.h>
-#include <arx/registry.hpp>
+#include <wv/registry.hpp>
 
 class base_class : public wv::registry<base_class>
 {

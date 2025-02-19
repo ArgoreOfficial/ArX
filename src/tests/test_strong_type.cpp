@@ -1,7 +1,7 @@
 #include "test_strong_type.hpp"
 
 #include <stdio.h>
-#include <arx/strong_type.hpp>
+#include <wv/strong_type.hpp>
 
 
 typedef wv::strong_type<uint16_t, struct handle1_kt> handle1_t;

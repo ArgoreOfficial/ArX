@@ -15,7 +15,7 @@
 #include <array>
 #include <string>
 
-#include <arx/typename_of.hpp>
+#include <wv/typename_of.hpp>
 
 struct test_struct
 {
@@ -112,7 +112,7 @@ typedef type_layout<
 //// ArXFX Brainstorming                                     ////
 /////////////////////////////////////////////////////////////////
 
-#include <arx/strong_type.hpp>
+#include <wv/strong_type.hpp>
 #define ARXFX_BACKEND_VK
 
 namespace wv {

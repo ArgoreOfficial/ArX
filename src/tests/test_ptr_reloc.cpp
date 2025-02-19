@@ -1,7 +1,7 @@
 #include "test_ptr_reloc.hpp"
 
 #include <stdio.h>
-#include <arx/ptr_reloc.hpp>
+#include <wv/ptr_reloc.hpp>
 
 void fptr_reloc( int _i )
 {
