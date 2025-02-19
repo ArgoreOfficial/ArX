@@ -1,45 +1,33 @@
-# ArX - Argore Cross-Project Library
+# libWyvern - Common Library for the Wyvern Game Engine
 classes and functions I use in several projects, all combined in one project!
 
-README TODO
+### README TODO AND SUBJECT TO CHANGE
 
 
-# arx::unordered_array
+# Notable Features
+## unordered_array
 
-### Why?
+Continuous container with keys that do not become invalid upon reallocation.  
+It's essentially a hybrid of `std::vector` and `std::unordered_map`, and similar to how OpenGL Object IDs are created.
 
-I needed a container that met these specific requirements
-* Must have a continuous block of memory
-* Keys/indices must **only** be invalidated when the user calls `erase()` or `clear()`
-* non-size_t keys, eg. uint16_t
-
-It's essentially a hybrid of `std::vector` and `std::unordered_map`  
-
-# Usage
-Note: Keys must be integer values, or castable to `size_t`
+Note: Keys must be integers or castable to `size_t`
 ```cpp
 typedef uint16_t ID;
-struct SomeObject 
+struct Foo
 {
     const char* name;
-    int coolness;
+    int bar;
 };
 
-
-arx::unordered_array<ID, SomeObject> objects;
-ID id1 = objects.emplace( "object1", 42 );
-ID id2 = objects.emplace( "object2", 11 );
+wv::unordered_array<ID, Foo> objects;
+ID id1 = objects.emplace( "foo1", 42 );
+ID id2 = objects.emplace( "foo2", 11 );
 
 objects.erase( id1 );
-id1 = 0; // make sure to invalidate key
+id1 = 0; // 0 is considered invalid handle, much like OpenGL
 
-objects.at( id2 ).name = "coolerObject2";
-objects[ id2 ].coolness = 9000;
-```
-
-```cpp
-objects.size();  // element size of buffer (size in bytes/size of element)
-objects.count(); // number of currently allocated elements in the array
+objects.at( id2 ).name = "coolfoo";
+objects[ id2 ].bar = 9000;
 ```
 
 ## Note on multithreading
