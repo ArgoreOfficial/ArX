@@ -1,6 +1,6 @@
 #pragma once
 
-namespace arx {
+namespace wv {
 
 template<typename _Ty>
 class singleton {

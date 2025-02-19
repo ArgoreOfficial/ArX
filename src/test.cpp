@@ -17,21 +17,21 @@ struct type_test_struct
 	int type_test_mint;
 };
 
-const char* typeval2str( arx::typeval _tval ) {
+const char* typeval2str( wv::typeval _tval ) {
 
 	switch( _tval )
 	{
-	case arx::type:            return "type      "; break;
-	case arx::type_pointer:    return "type*     "; break;
-	case arx::function:        return "function  "; break;
-	case arx::member_variable: return "m_variable"; break;
-	case arx::member_function: return "m_function"; break;
+	case wv::type:            return "type      "; break;
+	case wv::type_pointer:    return "type*     "; break;
+	case wv::function:        return "function  "; break;
+	case wv::member_variable: return "m_variable"; break;
+	case wv::member_function: return "m_function"; break;
 	}
 
 	return "unknown";
 }
 
-template<typename _Ty, arx::typeval _Tval = arx::typeval_of<_Ty>::ty>
+template<typename _Ty, wv::typeval _Tval = wv::typeval_of<_Ty>::ty>
 struct type_test
 {
 	static void print() {
@@ -39,7 +39,7 @@ struct type_test
 	}
 };
 
-void arxTest::test_typeval_of()
+void wv::test_typeval_of()
 {
 	printf( " ::------- typeval_of test ------::\n" );
 	int test_int = 0;

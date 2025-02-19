@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace arx {
+namespace wv {
 
 template<typename _Ty> struct typename_of;
 

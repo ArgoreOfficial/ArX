@@ -3,14 +3,14 @@
 #include <stdint.h>
 #include <arx/ptr.hpp>
 
-namespace arx
+namespace wv
 {
 
 template<typename _Ty>
 struct ptr_reloc
 {
 	ptr_reloc( uintptr_t _offset ) :
-		ptr{ reinterpret_cast<_Ty*>( arx::getBaseAddr() + _offset ) }
+		ptr{ reinterpret_cast<_Ty*>( wv::getBaseAddr() + _offset ) }
 	{ }
 
 	_Ty operator->() { return *ptr; }
@@ -25,7 +25,7 @@ struct ptr_reloc<_Rty( _Args... )>
 	typedef _Rty( *fptr_t )( _Args... );
 
 	ptr_reloc( uintptr_t _offset ) :
-		fptr{ reinterpret_cast<fptr_t>( arx::getBaseAddr() + _offset ) }
+		fptr{ reinterpret_cast<fptr_t>( wv::getBaseAddr() + _offset ) }
 	{ }
 
 	_Rty operator()( _Args... _args ) {

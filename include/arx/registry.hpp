@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <type_traits>
 
-namespace arx
+namespace wv
 {
 
 template<typename _Ty>

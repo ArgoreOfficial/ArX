@@ -14,11 +14,11 @@ float example( int32_t _i, float _f, testThing _ptr )
 	return static_cast<float>( _i ) + _f;
 }
 
-void arx::test_reflected_function()
+void wv::test_reflected_function()
 {
 	printf( " ::--- reflected_function test --::\n" );
 
-	arx::reflected_function<example> efunc( "example" );
+	wv::reflected_function<example> efunc( "example" );
 	printf( "symbol: %s\n", efunc.symbol() );
 	printf( "%zu parameters\n", efunc.arg_count() );
 	printf( "name:  %s %s(", efunc.ret_name(), efunc.name() );

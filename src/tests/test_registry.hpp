@@ -1,6 +1,6 @@
 #pragma once
 
-namespace arx {
+namespace wv {
 
 void test_registry();
 

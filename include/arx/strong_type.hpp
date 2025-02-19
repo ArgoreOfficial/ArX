@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace arx {
+namespace wv {
 
 template<typename _Ty, typename _Tag>
 struct strong_type
@@ -37,9 +37,9 @@ struct strong_type
 namespace std {
 
 template <typename T, typename Tag>
-struct hash<arx::strong_type<T, Tag>>
+struct hash<wv::strong_type<T, Tag>>
 {
-	size_t operator()( const arx::strong_type<T, Tag>& _type ) const { return hash<T>()( _type.value ); }
+	size_t operator()( const wv::strong_type<T, Tag>& _type ) const { return hash<T>()( _type.value ); }
 };
 
 }

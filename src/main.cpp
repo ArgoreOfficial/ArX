@@ -65,7 +65,7 @@ struct type_layout : public type_layout_base<_Ty>
 {
 	type_layout( const std::array<const char*, sizeof...( _Members )>& _names ) {
 		members = {
-			new type_member<arx::typename_of<decltype( _Members )>::Ty>( offset_of( _Members ) )...
+			new type_member<wv::typename_of<decltype( _Members )>::Ty>( offset_of( _Members ) )...
 		};
 		
 		for( size_t i = 0; i < sizeof...( _Members ); i++ )
@@ -115,7 +115,7 @@ typedef type_layout<
 #include <arx/strong_type.hpp>
 #define ARXFX_BACKEND_VK
 
-namespace arx {
+namespace wv {
 
 // arxfx/core/
 struct pipeline_interface {
@@ -233,12 +233,12 @@ public:
 
 int main()
 {
-	arx::test_array_view();
-	arx::test_ptr_reloc();
-	arx::test_reflected_function();
-	arx::test_registry();
-	arx::test_strong_type();
-	arx::test_unordered_array();
+	wv::test_array_view();
+	wv::test_ptr_reloc();
+	wv::test_reflected_function();
+	wv::test_registry();
+	wv::test_strong_type();
+	wv::test_unordered_array();
 
 	printf( " ::------ type_layout test ------::\n" );
 	

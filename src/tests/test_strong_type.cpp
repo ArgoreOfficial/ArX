@@ -4,14 +4,14 @@
 #include <arx/strong_type.hpp>
 
 
-typedef arx::strong_type<uint16_t, struct handle1_kt> handle1_t;
-typedef arx::strong_type<uint16_t, struct handle2_kt> handle2_t;
+typedef wv::strong_type<uint16_t, struct handle1_kt> handle1_t;
+typedef wv::strong_type<uint16_t, struct handle2_kt> handle2_t;
 
 static uint16_t get_strong_value( handle1_t _t ) {
 	return _t.value;
 }
 
-void arx::test_strong_type()
+void wv::test_strong_type()
 {
 	printf( " ::------ strong_type test ------::\n" );
 

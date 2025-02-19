@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 
-namespace arx
+namespace wv
 {
 
 class func_loader

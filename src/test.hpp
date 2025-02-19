@@ -1,6 +1,6 @@
 #pragma once
 
-namespace arxTest {
+namespace wv {
 
 void test_typeval_of();
 

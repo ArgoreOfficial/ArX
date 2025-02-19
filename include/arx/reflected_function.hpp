@@ -3,7 +3,7 @@
 #include <typeinfo>
 #include <vector>
 
-namespace arx {
+namespace wv {
 
 template<typename _Ty> struct ret_of;
 template<typename _Ty> struct ret_of<_Ty*> : ret_of<_Ty> {};

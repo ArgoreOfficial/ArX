@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <arx/registry.hpp>
 
-class base_class : public arx::registry<base_class>
+class base_class : public wv::registry<base_class>
 {
 public:
 	int base = 0;
@@ -14,7 +14,7 @@ struct child_data
 	int value = 0;
 };
 
-class child_class : arx::registar<child_class, base_class>
+class child_class : wv::registar<child_class, base_class>
 {
 public:
 	static std::string get_name() { return "some_child"; }
@@ -28,7 +28,7 @@ public:
 	float deriv = 2.0f;
 };
 
-void arx::test_registry()
+void wv::test_registry()
 {
 	printf( " ::-------- registry test -------::\n" );
 

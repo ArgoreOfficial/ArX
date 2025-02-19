@@ -2,7 +2,7 @@
 
 #include <arx/ptr.hpp>
 
-namespace arx {
+namespace wv {
 
 template<typename _Ty> struct fptr_detour;
 template<typename _Rty, typename... _Args>
@@ -12,7 +12,7 @@ struct fptr_detour<_Rty( _Args... )> {
 	fptr_detour()
 	{ }
 
-	fptr_detour( uintptr_t _targetOffset ) : target{ reinterpret_cast<fptr_t>( arx::getBaseAddr() + _targetOffset ) }
+	fptr_detour( uintptr_t _targetOffset ) : target{ reinterpret_cast<fptr_t>( wv::getBaseAddr() + _targetOffset ) }
 	{ }
 
 	fptr_detour( wchar_t* _pModule, char* _pProcName, fptr_t _fpDetour ):

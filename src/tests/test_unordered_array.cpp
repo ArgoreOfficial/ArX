@@ -10,12 +10,12 @@ struct abstract_car
 	float weightInKg;
 };
 
-void arx::test_unordered_array()
+void wv::test_unordered_array()
 {
 	printf( " ::---- unordered_array test ----::\n" );
 
 	{
-		arx::unordered_array<uint16_t, const char*> names;
+		wv::unordered_array<uint16_t, const char*> names;
 
 		printf( "size:   %zu\ncount:  %zu\n\n", names.size(), names.count() );
 
@@ -44,7 +44,7 @@ void arx::test_unordered_array()
 		printf( "size:   %zu\ncount:  %zu\n\n", names.size(), names.count() );
 	}
 
-	arx::unordered_array<uint16_t, abstract_car> cars;
+	wv::unordered_array<uint16_t, abstract_car> cars;
 	uint16_t saabID  = cars.emplace( "Saab 95 v4",    4, 946.0f );
 	uint16_t robinID = cars.emplace( "Reliant Robin", 3, 436.0f );
 

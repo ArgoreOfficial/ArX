@@ -1,5 +1,5 @@
 #include "test_array_view.hpp"
 
-void arx::test_array_view()
+void wv::test_array_view()
 {
 }
