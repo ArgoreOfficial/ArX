@@ -3,7 +3,7 @@
 #include <wv/unordered_array.hpp>
 #include <wv/strong_type.hpp>
 #include <wv/reflected_function.hpp>
-#include <wv/typename_of.hpp>
+#include <wv/type_traits.hpp>
 #include <wv/detour.hpp>
 #include <wv/ptr_reloc.hpp>
 

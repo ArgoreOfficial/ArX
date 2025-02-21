@@ -4,6 +4,10 @@
 
 namespace wv {
 
+/**
+ * typename_of.
+ */
+
 template<typename _Ty> struct typename_of;
 
 template<typename _Ty>
@@ -20,6 +24,10 @@ template<typename _Ty, auto _Ty::* ptr>
 constexpr const char* member_name() {
 	return typeid( typename_of<decltype( ptr )>::Ty ).name();
 }
+
+/**
+ * typeval_of.
+ */
 
 enum typeval {
 	type,
@@ -53,6 +61,16 @@ struct typeval_of<_Ty _Mty::*> {
 };
 
 
+
+/**
+ * Enable Range.
+ */
+template<size_t _V, size_t _Low, size_t _High>
+using enable_range_t = std::enable_if_t<_Low <= _V && _V <= _High>;
+
+/**
+ * String to _Ty.
+ */
 
 template<typename T>
 static T str_to_T( const char* _str ) {

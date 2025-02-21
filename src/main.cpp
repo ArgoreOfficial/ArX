@@ -15,7 +15,7 @@
 #include <array>
 #include <string>
 
-#include <wv/typename_of.hpp>
+#include <wv/type_traits.hpp>
 #include "wip/type_descriptor.h"
 
 struct test_struct
