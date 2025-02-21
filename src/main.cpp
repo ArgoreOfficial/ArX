@@ -41,7 +41,7 @@ typedef type_layout<
 
 namespace wv {
 
-#define INT_BYTES( _i ) _i&0xFF, ((_i&0xFF00)>>8), ((_i&0xFF0000)>>16), ((_i&0xFF000000 )>>32)
+#define INT_BYTES( _i ) _i&0xFF, ((_i>>8)&0xFF), ((_i>>16)&0xFF), ((_i>>24)&0xFF)
 
 #define WBIN_OFFSET_VERSION 4
 #define WBIN_OFFSET_NUM_ELEMENT WBIN_OFFSET_VERSION + 4
@@ -179,8 +179,8 @@ const wv::WBLayout layout{
 };
 
 
-template<size_t _N, typename T = void>
-struct bits_type {};
+template<size_t _N, typename = void>
+struct bits_type;
 
 template<size_t _N> struct bits_type<_N, typename wv::enable_range_t<_N,  0,  8>> { typedef uint8_t  Ty; };
 template<size_t _N> struct bits_type<_N, typename wv::enable_range_t<_N,  9, 16>> { typedef uint16_t Ty; };
