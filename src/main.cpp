@@ -179,9 +179,39 @@ const wv::WBLayout layout{
 };
 
 
+template<size_t _N, typename T = void>
+struct bits_type {};
+
+template<size_t _N> struct bits_type<_N, typename wv::enable_range_t<_N,  0,  8>> { typedef uint8_t  Ty; };
+template<size_t _N> struct bits_type<_N, typename wv::enable_range_t<_N,  9, 16>> { typedef uint16_t Ty; };
+template<size_t _N> struct bits_type<_N, typename wv::enable_range_t<_N, 17, 32>> { typedef uint32_t Ty; };
+template<size_t _N> struct bits_type<_N, typename wv::enable_range_t<_N, 33, 64>> { typedef uint64_t Ty; };
+
+template<size_t _N>
+struct bit_register {
+	using Ty = typename bits_type<_N>::Ty;
+	static constexpr size_t MAX = 1u << _N;
+
+	bit_register() = default;
+	bit_register( const Ty& _v ) : m_bits{ _v } {}
+	bit_register( const bit_register<_N>& _reg ) : m_bits{ _reg.m_bits } {}
+	
+	constexpr void operator=( const size_t& _v ) {
+		m_bits = _v;
+	}
+
+private:
+	Ty m_bits : _N;
+};
+
+bit_register<4> dataBus;
+bit_register<4> cmram;
 
 int main()
 {
+	dataBus = 12;
+	cmram = dataBus;
+
 	wv::test_array_view();
 	wv::test_ptr_reloc();
 	wv::test_reflected_function();
