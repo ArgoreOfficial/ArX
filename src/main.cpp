@@ -14,6 +14,9 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <atomic>
+#include <thread>
+
 
 #include <wv/type_traits.hpp>
 #include "wip/type_descriptor.h"
@@ -179,6 +182,15 @@ const wv::WBLayout layout{
 };
 
 
+
+
+
+
+
+
+
+
+
 template<size_t _N, typename = void>
 struct bits_type;
 
@@ -193,25 +205,145 @@ struct bit_register {
 	static constexpr size_t MAX = 1u << _N;
 
 	bit_register() = default;
-	bit_register( const Ty& _v ) : m_bits{ _v } {}
-	bit_register( const bit_register<_N>& _reg ) : m_bits{ _reg.m_bits } {}
+	bit_register( const Ty& _v ) : m_value{ _v } {}
+	bit_register( const bit_register<_N>& _reg ) : m_value{ _reg.m_value } {}
 	
+	constexpr operator Ty() { return m_value; }
+
 	constexpr void operator=( const size_t& _v ) {
-		m_bits = _v;
+		m_value = _v;
 	}
 
 private:
-	Ty m_bits : _N;
+	Ty m_value : _N;
 };
 
-bit_register<4> dataBus;
-bit_register<4> cmram;
+
+
+
+using pin = std::atomic_uint8_t;
+
+struct __declspec( novtable ) IBusPins {
+	virtual void onSignal() = 0;
+};
+
+template<size_t _Size>
+struct bus
+{
+	using Ty = typename bit_register<_Size>::Ty;
+
+	void connect( IBusPins* _buspins ) { 
+		pins.push_back( _buspins ); 
+		
+	}
+
+	void set( Ty _v ) {
+		value = _v;
+		for( auto& p : pins )
+			p->onSignal();
+	}
+
+	bit_register<_Size> value;
+	std::vector<IBusPins*> pins;
+};
+
+template<typename _Ty, size_t _Size>
+struct BusPins : IBusPins
+{
+	using Ty = typename bit_register<_Size>::Ty;
+
+	BusPins( _Ty* _owner ) : m_owner{ _owner } {};
+
+	void connectBusOut( bus<_Size>* _bus ) {
+		m_outbus = _bus;
+	}
+
+	void connectBusIn( bus<_Size>* _bus ) {
+		m_outbus = _bus;
+		_bus->connect( this );
+	}
+
+	void onSignal() override {
+		m_owner->onSignal();
+	}
+
+	void set( Ty _v ) {
+		m_outbus->set( _v );
+	}
+
+	Ty get() { 
+		return m_outbus->value; 
+	}
+
+private:
+	_Ty* m_owner = nullptr;
+	bus<_Size>* m_outbus = nullptr;
+};
+
+
+template<size_t _BusSize, size_t _DataSize>
+struct ram
+{
+	using Ty = typename bit_register<_BusSize>::Ty;
+
+	BusPins<ram<_BusSize, _DataSize>, _BusSize> m_inSelect{ this };
+	BusPins<ram<_BusSize, _DataSize>, _BusSize> m_outBus{ this };
+
+	void onSignal() {
+		m_outBus.set( data[ m_inSelect.get() ]);
+	}
+
+	Ty data[ _DataSize ] = { 
+		0, 1, 10, 1, 0, 0, 0, 0,
+		0, 0,  0, 1, 0, 0, 0, 0
+	};
+};
+
+
+struct i4004pins
+{
+	pin clock1;
+	pin clock2;
+	pin cmrom;
+};
+
+struct i4004
+{
+	BusPins<i4004, 4> m_inoutData{ this };
+	BusPins<i4004, 4> m_outCMRAM{ this };
+	
+	i4004pins pins;
+
+	void onSignal() {
+		printf( "" );
+	}
+
+	void cycle() {
+		auto v = m_inoutData.get();
+		m_outCMRAM.set( v + 1 );
+	}
+};
+
+i4004 gCPU;
+ram<4, 16> gRAM;
+bus<4> gCMRAM;
+bus<4> gDataBus;
 
 int main()
 {
-	dataBus = 12;
-	cmram = dataBus;
+	gCPU.m_outCMRAM.connectBusOut( &gCMRAM ); // connect cpu cram pins to select bus
+	gRAM.m_outBus.connectBusOut( &gDataBus ); // connect ram out to data bus
 
+	gCPU.m_inoutData.connectBusIn( &gDataBus ); // connect data bus to cpu data pins
+	gRAM.m_inSelect.connectBusIn( &gCMRAM );    // connect ram select bus to ram select pins
+
+	while( true )
+	{
+		printf( "%i ", (int)gDataBus.value );
+		gCPU.cycle();
+		std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+	}
+	
 	wv::test_array_view();
 	wv::test_ptr_reloc();
 	wv::test_reflected_function();
