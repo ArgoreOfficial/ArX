@@ -29,7 +29,7 @@ struct strong_type
 	operator _Ty() const { return value; }
 
 	static constexpr _Ty InvalidID = static_cast<_Ty>( -1 );
-	_Ty value;
+	_Ty value = InvalidID;
 };
 
 }
