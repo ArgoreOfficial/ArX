@@ -16,6 +16,10 @@ struct strong_type
 	{
 	}
 
+	strong_type( const strong_type<_Ty, _Tag>& _other ) :
+		value{ _other.value }
+	{}
+
 	inline void invalidate() { value = InvalidID; }
 	inline bool is_valid() const { return value != InvalidID; }
 
